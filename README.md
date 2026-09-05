@@ -1,4 +1,4 @@
-# APCafeteria Admin Portal
+# Cafeteria Admin Portal
 
 ## Tech stack
 

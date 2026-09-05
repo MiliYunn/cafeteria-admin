@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "apcafeteria-admin": {
+    "cafeteria-admin": {
       "projectType": "application",
       "root": "",
       "sourceRoot": "src",
@@ -40,10 +40,10 @@
           "options": { "proxyConfig": "proxy.conf.json" },
           "configurations": {
             "production": {
-              "buildTarget": "apcafeteria-admin:build:production"
+              "buildTarget": "cafeteria-admin:build:production"
             },
             "development": {
-              "buildTarget": "apcafeteria-admin:build:development"
+              "buildTarget": "cafeteria-admin:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -61,7 +61,7 @@ export class ResourcePage implements OnDestroy {
   form = new FormGroup<Record<string, FormControl<any>>>({});
   private listRequest?: Subscription;
   constructor() {
-    inject(Title).setTitle(`${this.config.title} · APCafeteria`);
+    inject(Title).setTitle(`${this.config.title} · Cafeteria`);
     this.extra = Object.fromEntries(this.config.filters.map((field) => [field.key, '']));
     for (const field of this.config.filters) if (field.options) this.loadOptions(field.options);
     if (this.config.nested) {

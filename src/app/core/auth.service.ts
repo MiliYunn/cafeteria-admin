@@ -16,7 +16,7 @@ export interface Tokens {
 export interface Session extends Tokens {
   expiresAt: number;
 }
-const SESSION_KEY = 'apcafeteria.admin.session';
+const SESSION_KEY = 'cafeteria.admin.session';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

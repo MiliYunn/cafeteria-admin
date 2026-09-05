@@ -18,17 +18,17 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'overview' },
       {
         path: 'overview',
-        title: 'Overview · APCafeteria',
+        title: 'Overview · Cafeteria',
         loadComponent: () => import('./pages/overview').then((m) => m.Overview),
       },
       {
         path: 'profile',
-        title: 'My account · APCafeteria',
+        title: 'My account · Cafeteria',
         loadComponent: () => import('./pages/profile').then((m) => m.Profile),
       },
       {
         path: 'uploads',
-        title: 'File library · APCafeteria',
+        title: 'File library · Cafeteria',
         loadComponent: () => import('./pages/uploads').then((m) => m.Uploads),
       },
       ...['roles', 'users', 'categories', 'genres', 'payment-methods', 'shops'].map((resource) => ({

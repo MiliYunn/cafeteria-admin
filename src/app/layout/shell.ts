@@ -55,8 +55,8 @@ export class Shell {
   ];
   constructor() {
     try {
-      this.dark.set(localStorage.getItem('apcafeteria.theme') === 'dark');
-      this.collapsed.set(localStorage.getItem('apcafeteria.sidebar') === 'collapsed');
+      this.dark.set(localStorage.getItem('cafeteria.theme') === 'dark');
+      this.collapsed.set(localStorage.getItem('cafeteria.sidebar') === 'collapsed');
     } catch {
       /* Defaults if preferences are unavailable. */
     }
@@ -74,7 +74,7 @@ export class Shell {
   toggleSidebar() {
     this.collapsed.update((value) => !value);
     try {
-      localStorage.setItem('apcafeteria.sidebar', this.collapsed() ? 'collapsed' : 'expanded');
+      localStorage.setItem('cafeteria.sidebar', this.collapsed() ? 'collapsed' : 'expanded');
     } catch {
       /* Optional preference. */
     }
@@ -83,7 +83,7 @@ export class Shell {
     this.dark.update((value) => !value);
     document.documentElement.classList.toggle('dark', this.dark());
     try {
-      localStorage.setItem('apcafeteria.theme', this.dark() ? 'dark' : 'light');
+      localStorage.setItem('cafeteria.theme', this.dark() ? 'dark' : 'light');
     } catch {
       /* Optional preference. */
     }

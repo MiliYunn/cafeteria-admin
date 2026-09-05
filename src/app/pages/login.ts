@@ -14,7 +14,7 @@ import { Icon } from '../shared/icon';
     <section class="login-story">
       <a class="brand" href="/"
         ><span class="brand-mark">A<span></span></span
-        ><span class="brand-text">APCafeteria<small>ASIA PACIFIC UNIVERSITY</small></span></a
+        ><span class="brand-text">Cafeteria<small>ASIA PACIFIC UNIVERSITY</small></span></a
       >
       <div class="login-story-content">
         <span class="login-pill"><span></span> THE CAMPUS, CONNECTED</span>
@@ -105,7 +105,7 @@ import { Icon } from '../shared/icon';
           Having trouble signing in?<br /><span>Contact your cafeteria system administrator.</span>
         </div>
       </div>
-      <footer>© {{ year }} APCafeteria <span>Secure administrator access</span></footer>
+      <footer>© {{ year }} Cafeteria <span>Secure administrator access</span></footer>
     </section>
   </div>`,
 })

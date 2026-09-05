@@ -17,7 +17,7 @@ import { Icon } from './icon';
     <section class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title" tabindex="-1">
       <header class="modal-head">
         <div>
-          <span class="eyebrow">APCAFETERIA ADMIN</span>
+          <span class="eyebrow">CAFETERIA ADMIN</span>
           <h2>{{ title }}</h2>
         </div>
         <button
