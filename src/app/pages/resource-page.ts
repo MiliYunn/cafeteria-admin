@@ -438,6 +438,9 @@ export class ResourcePage implements OnDestroy {
   firstItem() {
     return this.pagination().total ? (this.page - 1) * this.perPage + 1 : 0;
   }
+  rowNumber(index: number) {
+    return (this.page - 1) * this.perPage + index + 1;
+  }
   lastItem() {
     return Math.min(this.page * this.perPage, this.pagination().total);
   }

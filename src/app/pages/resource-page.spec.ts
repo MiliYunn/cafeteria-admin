@@ -54,6 +54,19 @@ describe('CRUD workflow', () => {
     expect(filtered.request.params.get('search')).toBe('member');
     filtered.flush(ok([]));
   });
+  it('shows pagination-aware row numbers instead of database IDs', () => {
+    const page = setup();
+    page.page = 2;
+    page.perPage = 10;
+    list('roles').flush(
+      ok([{ id: 91, name: 'staff', is_active: true, updated_at: '2026-09-05' }]),
+    );
+    fixture.detectChanges();
+    const table = (fixture.nativeElement as HTMLElement).querySelector('table')!;
+    expect(table.querySelector('th')?.textContent?.trim()).toBe('No.');
+    expect(table.querySelector('tbody td')?.textContent?.trim()).toBe('11');
+    expect(table.textContent).not.toContain('#91');
+  });
   it('validates before POST and maps server field errors', () => {
     const page = setup();
     list('roles').flush(ok([]));

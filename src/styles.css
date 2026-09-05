@@ -1294,7 +1294,7 @@ tbody tr:last-child td {
 tbody tr:hover {
   background: var(--surface-soft);
 }
-.id-column {
+.number-column {
   padding-left: 24px;
   font-size: 10px;
 }
