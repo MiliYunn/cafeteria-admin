@@ -14,7 +14,7 @@ import { Icon } from '../shared/icon';
     <section class="login-story">
       <a class="brand" href="/"
         ><span class="brand-mark">A<span></span></span
-        ><span class="brand-text">Cafeteria<small>ASIA PACIFIC UNIVERSITY</small></span></a
+        ><span class="brand-text">Cafeteria<small>ADMIN PORTAL</small></span></a
       >
       <div class="login-story-content">
         <span class="login-pill"><span></span> THE CAMPUS, CONNECTED</span>
@@ -37,7 +37,7 @@ import { Icon } from '../shared/icon';
         </div>
       </div>
       <div class="login-story-footer">
-        <span>Good food. Connected people.</span><span>APU / MALAYSIA</span>
+        <span>Good food. Connected people.</span><span>CAMPUS / MALAYSIA</span>
       </div>
     </section>
     <section class="login-panel">
@@ -58,7 +58,7 @@ import { Icon } from '../shared/icon';
                 formControlName="email"
                 type="email"
                 autocomplete="username"
-                placeholder="you@apu.edu.my"
+                placeholder="admin@example.com"
                 [attr.aria-invalid]="invalid('email')"
                 aria-describedby="email-error"
               />
