@@ -15,27 +15,11 @@
 
 Install Node.js 22.12 or newer, then open PowerShell and run:
 
-```powershell
-cd "C:\Parallel Universe\AP Caferteria\Repositories\apcafeteria-frontend"
-npm ci
+```bash
+npm install
 ```
-
-The Flask backend must also be installed and configured before using the portal.
-
-## Running
-
-Start the backend in one PowerShell window:
-
-```powershell
-cd "C:\Parallel Universe\AP Caferteria\Repositories\apcafeteria-backend"
-.\.venv\Scripts\python.exe manage.py run
-```
-
-Start the admin portal in another PowerShell window:
-
-```powershell
-cd "C:\Parallel Universe\AP Caferteria\Repositories\apcafeteria-frontend"
-npm start
+```bash
+npm run start
 ```
 
 Open `http://127.0.0.1:5173` in your browser. Press `Ctrl+C` in each PowerShell window to stop the servers.
