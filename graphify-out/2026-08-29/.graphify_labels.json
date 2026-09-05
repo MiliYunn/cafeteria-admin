@@ -1,0 +1,21 @@
+{
+  "0": "resource-page.ts",
+  "1": "ResourcePage",
+  "2": "development",
+  "3": "dependencies",
+  "4": "compilerOptions",
+  "5": "devDependencies",
+  "6": "resources.ts",
+  "7": "scripts",
+  "8": "Shell",
+  "9": "AuthService",
+  "10": "APCafeteria Admin",
+  "11": "tsconfig.app.json",
+  "12": "Uploads",
+  "13": "tsconfig.spec.json",
+  "14": "app.config.ts",
+  "15": "fixture-server.mjs",
+  "16": "Overview",
+  "17": ".prettierrc.json",
+  "18": "api-contract.test.mjs"
+}

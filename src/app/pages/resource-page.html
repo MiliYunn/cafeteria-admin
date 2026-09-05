@@ -1,0 +1,569 @@
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">CAMPUS MANAGEMENT</div>
+    <h1>{{ config.title }}<span class="heading-dot">.</span></h1>
+    <p>{{ config.description }}</p>
+  </div>
+  <div class="heading-actions">
+    @if (config.optionEndpoint) {
+      <button class="btn btn-secondary" (click)="showOptions()" [disabled]="busy()">
+        <app-icon name="check" [size]="17" />Active options
+      </button>
+    }
+    <button
+      class="btn btn-primary"
+      (click)="open('create')"
+      [disabled]="(config.nested && !shopId) || busy()"
+    >
+      <app-icon name="plus" [size]="18" />Add {{ config.singular }}
+    </button>
+  </div>
+</section>
+@if (config.nested) {
+  <section class="shop-picker card">
+    <div class="shop-picker-title">
+      <span class="mini-icon"><app-icon name="shops" /></span>
+      <div>
+        <strong>Choose a shop</strong>
+        <p>Staff members belong to a specific shop.</p>
+      </div>
+    </div>
+    <div class="shop-picker-controls">
+      <form class="compact-search" (ngSubmit)="loadShops(true)">
+        <input
+          aria-label="Search shops"
+          name="shopSearch"
+          [(ngModel)]="shopSearch"
+          placeholder="Search shops…"
+        /><button class="icon-button" aria-label="Find shops" [disabled]="shopLoading()">
+          <app-icon name="search" [size]="18" />
+        </button>
+      </form>
+      <select aria-label="Selected shop" [(ngModel)]="shopId" (ngModelChange)="changeShop()">
+        <option value="">Select a shop</option>
+        @if (shopId) {
+          <option [value]="shopId">{{ shopName() }}</option>
+        }
+        @for (shop of shops(); track shop.id) {
+          @if ('' + shop.id !== shopId) {
+            <option [value]="'' + shop.id">{{ shop['name'] }} · #{{ shop.id }}</option>
+          }
+        }
+      </select>
+      @if (shopPage > 1 || moreShops()) {
+        <button
+          class="icon-button"
+          aria-label="Previous shop choices"
+          [disabled]="shopPage === 1 || shopLoading()"
+          (click)="shopPage = shopPage - 1; loadShops()"
+        >
+          <app-icon name="left" /></button
+        ><button
+          class="icon-button"
+          aria-label="Next shop choices"
+          [disabled]="!moreShops() || shopLoading()"
+          (click)="shopPage = shopPage + 1; loadShops()"
+        >
+          <app-icon name="right" />
+        </button>
+      }
+    </div>
+    @if (shopError()) {
+      <p class="field-error">
+        {{ shopError() }}
+        <button class="text-button" (click)="loadShops()">Retry</button>
+      </p>
+    }
+  </section>
+}
+@if (optionsError()) {
+  <div class="error-banner" role="alert">
+    <app-icon name="alert" />Option lists could not load: {{ optionsError() }}
+    <button class="text-button" (click)="retryOptions()">Retry options</button>
+  </div>
+}
+<section class="card resource-card">
+  <div class="table-heading">
+    <div class="table-title">
+      <span class="mini-icon"><app-icon [name]="config.icon" [size]="20" /></span>
+      <h2>All {{ config.title.toLowerCase() }}</h2>
+      @if (!error() && (!config.nested || shopId)) {
+        <span class="count-pill">{{ pagination().total }}</span>
+      }
+    </div>
+    <button
+      class="icon-button"
+      aria-label="Reload list"
+      title="Reload list"
+      (click)="load()"
+      [disabled]="loading() || (config.nested && !shopId)"
+    >
+      <app-icon name="refresh" [size]="18" [class.spin]="loading()" />
+    </button>
+  </div>
+  <form class="filter-bar" (ngSubmit)="filter()">
+    <div class="search-input">
+      <app-icon name="search" [size]="19" /><input
+        name="search"
+        [(ngModel)]="search"
+        [placeholder]="'Search ' + config.title.toLowerCase() + '…'"
+        aria-label="Search records"
+      />
+    </div>
+    <select name="status" [(ngModel)]="status" aria-label="Filter by status">
+      <option value="">All statuses</option>
+      <option value="true">Active</option>
+      <option value="false">Inactive</option>
+    </select>
+    @for (field of config.filters; track field.key) {
+      @if (field.options) {
+        <select
+          [name]="field.key"
+          [(ngModel)]="extra[field.key]"
+          [attr.aria-label]="'Filter by ' + field.label"
+        >
+          <option value="">All {{ field.label.toLowerCase() }}s</option>
+          @for (option of options()[field.options] || []; track option.id) {
+            <option [value]="option.id">{{ option.name }}</option>
+          }
+        </select>
+      } @else {
+        <input
+          [name]="field.key"
+          [(ngModel)]="extra[field.key]"
+          [type]="field.type || 'text'"
+          [placeholder]="field.label"
+          [attr.aria-label]="'Filter by ' + field.label"
+          min="1"
+        />
+      }
+    }
+    <button
+      type="submit"
+      class="btn btn-secondary"
+      [disabled]="loading() || (config.nested && !shopId)"
+    >
+      <app-icon name="filter" [size]="16" />Apply
+    </button>
+    @if (
+      search ||
+      status ||
+      extra['type'] ||
+      extra['role_id'] ||
+      extra['department_id'] ||
+      extra['payment_method_id']
+    ) {
+      <button type="button" class="text-button" (click)="reset()">Reset</button>
+    }
+  </form>
+  @if (loading()) {
+    <div class="table-loading" aria-label="Loading records" role="status">
+      @for (row of [1, 2, 3, 4, 5]; track row) {
+        <div class="skeleton-row">
+          <span class="skeleton skeleton-avatar"></span><span class="skeleton"></span
+          ><span class="skeleton"></span><span class="skeleton"></span>
+        </div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="empty-state" role="alert">
+      <span class="empty-icon error"><app-icon name="alert" [size]="30" /></span>
+      <h3>We couldn't load this list</h3>
+      <p>{{ error() }}</p>
+      <button class="btn btn-secondary" (click)="load()">
+        <app-icon name="refresh" [size]="16" />Try again
+      </button>
+    </div>
+  } @else if (config.nested && !shopId) {
+    <div class="empty-state">
+      <span class="empty-icon"><app-icon name="shops" [size]="32" /></span>
+      <h3>Start with a shop</h3>
+      <p>Select a shop above to manage its {{ config.title.toLowerCase() }}.</p>
+      <a routerLink="/shops" class="text-button"
+        >Browse all shops <app-icon name="forward" [size]="16"
+      /></a>
+    </div>
+  } @else if (!rows().length) {
+    <div class="empty-state">
+      <span class="empty-icon"><app-icon [name]="config.icon" [size]="32" /></span>
+      <h3>No {{ config.title.toLowerCase() }} found</h3>
+      <p>Try adjusting your filters, or add your first {{ config.singular }}.</p>
+      <button class="btn btn-secondary" (click)="open('create')">
+        <app-icon name="plus" [size]="16" />Add {{ config.singular }}
+      </button>
+    </div>
+  } @else {
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="id-column">ID</th>
+            @for (column of config.columns; track column.key) {
+              <th>{{ column.label }}</th>
+            }
+            <th class="actions-column">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.id) {
+            <tr>
+              <td class="id-column">#{{ row.id }}</td>
+              @for (column of config.columns; track column.key; let first = $first) {
+                <td [class.primary-cell]="first">
+                  @if (column.kind === 'status') {
+                    <span class="status-pill" [class.inactive]="!row[column.key]"
+                      ><span></span>{{ row[column.key] ? 'Active' : 'Inactive' }}</span
+                    >
+                  } @else if (column.kind === 'date') {
+                    {{ row[column.key] ? (row[column.key] | date: 'dd MMM yyyy') : '—' }}
+                  } @else {
+                    @if (first) {
+                      <button class="record-link" (click)="open('view', row)">
+                        {{ display(row[column.key]) }}
+                      </button>
+                    } @else {
+                      <span class="cell-text" [title]="display(row[column.key])">{{
+                        display(row[column.key])
+                      }}</span>
+                    }
+                  }
+                </td>
+              }
+              <td class="actions-column">
+                <div class="row-actions">
+                  <button
+                    class="icon-button"
+                    [attr.aria-label]="'View record ' + row.id"
+                    title="View details"
+                    [disabled]="busy()"
+                    (click)="open('view', row)"
+                  >
+                    <app-icon name="eye" [size]="16" /></button
+                  ><button
+                    class="icon-button"
+                    [attr.aria-label]="'Edit record ' + row.id"
+                    title="Edit"
+                    [disabled]="busy()"
+                    (click)="open('edit', row)"
+                  >
+                    <app-icon name="edit" [size]="16" /></button
+                  ><button
+                    class="icon-button danger-icon"
+                    [attr.aria-label]="'Delete record ' + row.id"
+                    title="Delete"
+                    [disabled]="busy()"
+                    (click)="open('delete', row)"
+                  >
+                    <app-icon name="delete" [size]="16" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (!error() && (!config.nested || shopId)) {
+    <footer class="pagination">
+      <span
+        >Showing <strong>{{ firstItem() }}–{{ lastItem() }}</strong> of
+        <strong>{{ pagination().total }}</strong> results</span
+      >
+      <div class="pagination-controls">
+        <label for="page-size">Rows per page</label
+        ><select
+          id="page-size"
+          [(ngModel)]="perPage"
+          (ngModelChange)="filter()"
+          [disabled]="loading()"
+        >
+          <option [ngValue]="10">10</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+          <option [ngValue]="100">100</option></select
+        ><button
+          class="icon-button bordered"
+          aria-label="Previous page"
+          [disabled]="!pagination().has_previous || loading()"
+          (click)="changePage(-1)"
+        >
+          <app-icon name="left" [size]="16" /></button
+        ><span>{{ page }} / {{ pagination().total_pages || 1 }}</span
+        ><button
+          class="icon-button bordered"
+          aria-label="Next page"
+          [disabled]="!pagination().has_next || loading()"
+          (click)="changePage(1)"
+        >
+          <app-icon name="right" [size]="16" />
+        </button>
+      </div>
+    </footer>
+  }
+</section>
+<div class="page-footnote">
+  <app-icon name="lock" [size]="14" />Only administrators can manage these records. All changes are
+  saved to the cafeteria database.
+</div>
+
+@if (dialog() === 'create' || dialog() === 'edit') {
+  <app-dialog
+    [title]="(dialog() === 'edit' ? 'Edit ' : 'Add ') + config.singular"
+    [busy]="busy() || !!uploading()"
+    (closed)="dialog.set(null)"
+    ><form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="modal-body">
+        @if (config.nested) {
+          <div class="context-chip"><app-icon name="shops" [size]="15" />{{ shopName() }}</div>
+        }
+        @if (formError()) {
+          <div class="error-banner" role="alert">{{ formError() }}</div>
+        }
+        <div class="form-grid">
+          @for (field of config.fields; track field.key) {
+            <div
+              class="field"
+              [class.full-width]="
+                field.type === 'textarea' ||
+                field.type === 'checkbox' ||
+                field.type === 'radio' ||
+                field.type === 'multiselect' ||
+                field.upload
+              "
+            >
+              @if (field.type === 'checkbox') {
+                <label class="switch-label"
+                  ><input type="checkbox" [formControlName]="field.key" /><span
+                    ><strong>Active record</strong
+                    ><small>Make this {{ config.singular }} available for use.</small></span
+                  ></label
+                >
+              } @else {
+                <label [for]="'field-' + field.key"
+                  >{{ field.label }}
+                  @if (field.required && !(dialog() === 'edit' && field.type === 'password')) {
+                    <span class="required">*</span>
+                  }
+                </label>
+                @if (field.type === 'textarea') {
+                  <textarea
+                    [id]="'field-' + field.key"
+                    [formControlName]="field.key"
+                    rows="3"
+                    [attr.aria-describedby]="'error-' + field.key"
+                  ></textarea>
+                } @else if (field.type === 'radio') {
+                  <div class="radio-group" [attr.aria-describedby]="'error-' + field.key">
+                    @for (choice of field.choices || []; track choice.value) {
+                      <label class="radio-option">
+                        <input type="radio" [formControlName]="field.key" [value]="choice.value" />
+                        <span>{{ choice.label }}</span>
+                      </label>
+                    }
+                  </div>
+                } @else if (field.type === 'multiselect') {
+                  <div class="multi-select-grid">
+                    @for (option of options()[field.options!] || []; track option.id) {
+                      <label class="multi-select-option">
+                        <input
+                          type="checkbox"
+                          [checked]="multiSelected(field, option.id)"
+                          (change)="toggleMulti(field, option.id, $any($event.target).checked)"
+                        />
+                        <span>{{ option.name }}</span>
+                      </label>
+                    }
+                  </div>
+                  @if (!options()[field.options!]?.length) {
+                    <small class="field-hint">No active categories are available.</small>
+                  }
+                } @else if (field.type === 'select') {
+                  <select
+                    [id]="'field-' + field.key"
+                    [formControlName]="field.key"
+                    [attr.aria-describedby]="'error-' + field.key"
+                  >
+                    <option value="">Choose {{ field.label.toLowerCase() }}</option>
+                    @if (selected()?.[field.key]) {
+                      <option [ngValue]="selected()![field.key]">
+                        Current selection · #{{ selected()![field.key] }}
+                      </option>
+                    }
+                    @for (option of options()[field.options!] || []; track option.id) {
+                      <option [ngValue]="option.id">{{ option.name }}</option>
+                    }
+                  </select>
+                  @if (!options()[field.options!]?.length) {
+                    <small class="field-hint"
+                      >No active options loaded. Create an active
+                      {{ field.label.toLowerCase() }} first, or
+                      <button
+                        type="button"
+                        class="text-button"
+                        (click)="loadOptions(field.options!, true)"
+                      >
+                        retry</button
+                      >.</small
+                    >
+                  }
+                } @else {
+                  <div [class.upload-input]="field.upload">
+                    <input
+                      [id]="'field-' + field.key"
+                      [type]="field.type === 'url' ? 'text' : field.type || 'text'"
+                      [formControlName]="field.key"
+                      [attr.autocomplete]="field.type === 'password' ? 'new-password' : 'off'"
+                      [attr.min]="field.type === 'number' ? 1 : null"
+                      [attr.step]="field.type === 'time' ? 1 : null"
+                      [attr.aria-invalid]="!!fieldError(field)"
+                      [attr.aria-describedby]="'error-' + field.key"
+                    />
+                    @if (field.upload) {
+                      <label class="btn btn-secondary file-pick" [class.disabled]="!!uploading()"
+                        ><app-icon name="upload" [size]="16" />{{
+                          uploading() === field.key ? 'Uploading…' : 'Upload'
+                        }}<input
+                          type="file"
+                          [accept]="
+                            field.preview === 'image'
+                              ? '.jpg,.jpeg,.png,.webp,.gif,image/*'
+                              : '.jpg,.jpeg,.png,.webp,.gif,.pdf'
+                          "
+                          [disabled]="!!uploading() || busy()"
+                          (change)="upload($event, field)"
+                          [attr.aria-label]="'Upload ' + field.label"
+                      /></label>
+                    }
+                  </div>
+                  @if (field.preview === 'image' && imagePreview(field)) {
+                    <div class="form-image-preview">
+                      <img
+                        [src]="imagePreview(field)"
+                        [alt]="field.label + ' preview'"
+                        (error)="imageFailed($event)"
+                      />
+                      <div>
+                        <strong>{{
+                          uploading() === field.key ? 'Uploading preview' : 'Logo preview'
+                        }}</strong>
+                        <small>{{ form.controls[field.key].value || 'Selected image' }}</small>
+                      </div>
+                    </div>
+                  }
+                }
+                @if (field.hint) {
+                  <small class="field-hint">{{ field.hint }}</small>
+                }
+                @if (fieldError(field)) {
+                  <small [id]="'error-' + field.key" class="field-error">{{
+                    fieldError(field)
+                  }}</small>
+                }
+              }
+            </div>
+          }
+        </div>
+      </div>
+      <footer class="modal-actions">
+        <span class="required-note">* Required fields</span
+        ><button
+          type="button"
+          class="btn btn-secondary"
+          [disabled]="busy() || !!uploading()"
+          (click)="dialog.set(null)"
+        >
+          Cancel</button
+        ><button type="submit" class="btn btn-primary" [disabled]="busy() || !!uploading()">
+          <app-icon [name]="busy() ? 'loading' : 'check'" [class.spin]="busy()" [size]="17" />{{
+            busy() ? 'Saving…' : 'Save ' + config.singular
+          }}
+        </button>
+      </footer>
+    </form></app-dialog
+  >
+}
+@if (dialog() === 'view') {
+  <app-dialog [title]="selectedLabel()" (closed)="dialog.set(null)"
+    ><div class="modal-body">
+      <dl class="details-grid">
+        @for (item of details(); track item.key) {
+          <div>
+            <dt>{{ displayLabel(item.key) | titlecase }}</dt>
+            <dd>
+              @if (isImageField(item.key) && item.value) {
+                <img
+                  class="detail-image-preview"
+                  [src]="item.value"
+                  [alt]="selectedLabel() + ' logo'"
+                  (error)="imageFailed($event)"
+                />
+              } @else if ((item.key === 'created_at' || item.key === 'updated_at') && item.value) {
+                {{ item.value | date: 'medium' }}
+              } @else {
+                {{ display(item.value) }}
+              }
+            </dd>
+          </div>
+        }
+      </dl>
+    </div>
+    <footer class="modal-actions">
+      <button class="btn btn-secondary" (click)="dialog.set(null)">Close</button
+      ><button class="btn btn-primary" (click)="prepareForm(selected()!); dialog.set('edit')">
+        <app-icon name="edit" [size]="17" />Edit {{ config.singular }}
+      </button>
+    </footer></app-dialog
+  >
+}
+@if (dialog() === 'delete') {
+  <app-dialog
+    [title]="'Delete ' + config.singular + '?'"
+    [busy]="busy()"
+    (closed)="dialog.set(null)"
+    ><div class="modal-body">
+      @if (formError()) {
+        <div class="error-banner" role="alert">{{ formError() }}</div>
+      }
+      <div class="delete-warning">
+        <span class="empty-icon error"><app-icon name="delete" [size]="27" /></span>
+        <p>
+          <strong>{{ selectedLabel() }}</strong> will be permanently deleted. This cannot be undone.
+        </p>
+        <small>Records linked to other data may be protected by the server.</small>
+      </div>
+    </div>
+    <footer class="modal-actions">
+      <button class="btn btn-secondary" [disabled]="busy()" (click)="dialog.set(null)">
+        Keep record</button
+      ><button class="btn btn-danger" [disabled]="busy()" (click)="remove()">
+        {{ busy() ? 'Deleting…' : 'Delete permanently' }}
+      </button>
+    </footer></app-dialog
+  >
+}
+@if (optionList() !== null) {
+  <app-dialog
+    [title]="'Active ' + config.title.toLowerCase() + ' options'"
+    (closed)="optionList.set(null)"
+    ><div class="modal-body">
+      <p class="muted mb-5">
+        These active records are available for selection in other forms. This endpoint returns a
+        normal, unpaginated list.
+      </p>
+      <ul class="option-list">
+        @for (option of optionList(); track option.id) {
+          <li>
+            <span>{{ option.name }}</span
+            ><span class="count-pill">#{{ option.id }}</span>
+          </li>
+        } @empty {
+          <li>No active options available.</li>
+        }
+      </ul>
+    </div>
+    <footer class="modal-actions">
+      <button class="btn btn-secondary" (click)="optionList.set(null)">Close</button>
+    </footer></app-dialog
+  >
+}

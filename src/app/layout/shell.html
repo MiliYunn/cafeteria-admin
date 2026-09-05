@@ -1,0 +1,176 @@
+<a class="skip-link" href="#main-content">Skip to main content</a>
+<div class="app-frame" [class.sidebar-collapsed]="collapsed()" [class.mobile-open]="mobile()">
+  @if (mobile()) {
+    <button
+      class="sidebar-scrim"
+      aria-label="Close navigation"
+      (click)="mobile.set(false)"
+    ></button>
+  }
+  <aside class="sidebar" aria-label="Main navigation">
+    <a class="brand" routerLink="/overview" aria-label="APCafeteria home"
+      ><span class="brand-mark">A<span></span></span
+      ><span class="brand-text">APCafeteria<small>ADMIN PORTAL</small></span></a
+    >
+    <div class="workspace-label">
+      <span class="workspace-dot"></span><span>Campus workspace</span
+      ><span class="workspace-tag">APU</span>
+    </div>
+    <nav class="nav-area">
+      <span class="nav-caption">WORKSPACE</span>
+      <a routerLink="/overview" routerLinkActive="active" class="nav-link" title="Overview"
+        ><app-icon name="dashboard" /><span>Overview</span></a
+      >
+      @for (group of groups; track group.label) {
+        <button
+          class="nav-group"
+          (click)="toggleGroup(group)"
+          [attr.aria-expanded]="group.open && !collapsed()"
+          [attr.title]="group.label"
+        >
+          <app-icon [name]="group.icon" /><span>{{ group.label }}</span
+          ><app-icon class="group-chevron" [class.rotated]="group.open" name="right" [size]="15" />
+        </button>
+        @if (group.open && !collapsed()) {
+          <div class="submenu">
+            @for (link of group.links; track link.path) {
+              <a [routerLink]="'/' + link.path" routerLinkActive="active"
+                ><span class="nav-dot"></span>{{ link.label }}</a
+              >
+            }
+          </div>
+        }
+      }
+      <span class="nav-caption tools-caption">TOOLS</span>
+      <a routerLink="/uploads" routerLinkActive="active" class="nav-link" title="File library"
+        ><app-icon name="upload" /><span>File library</span></a
+      >
+      <a routerLink="/profile" routerLinkActive="active" class="nav-link" title="My account"
+        ><app-icon name="roles" /><span>My account</span></a
+      >
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="campus-note">
+        <app-icon name="building" [size]="23" /><strong>A better campus experience.</strong>
+        <p>Good food. Connected people.</p>
+      </div>
+      <button
+        class="collapse-control"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      >
+        <app-icon [name]="collapsed() ? 'expand' : 'collapse'" /><span>Collapse sidebar</span>
+      </button>
+    </div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar">
+      <div class="breadcrumbs">
+        <button
+          class="icon-button mobile-menu"
+          aria-label="Open navigation"
+          (click)="mobile.set(true)"
+        >
+          <app-icon name="menu" /></button
+        ><span class="breadcrumb-parent">Workspace</span
+        ><app-icon name="right" [size]="14" /><strong>{{ section() }}</strong>
+      </div>
+      <div class="topbar-actions">
+        <span class="admin-badge">Admin portal</span>
+        <button
+          class="icon-button"
+          (click)="toggleTheme()"
+          [attr.aria-label]="dark() ? 'Switch to light mode' : 'Switch to dark mode'"
+          [attr.title]="dark() ? 'Light mode' : 'Dark mode'"
+        >
+          <app-icon [name]="dark() ? 'sun' : 'moon'" />
+        </button>
+        <div class="notification-wrap">
+          <button
+            class="icon-button notification-button"
+            aria-label="Notifications"
+            [attr.aria-expanded]="notifications()"
+            (click)="notifications.set(!notifications())"
+          >
+            <app-icon name="bell" />
+            @if (activity.unread()) {
+              <span class="notification-dot"></span>
+            }
+          </button>
+          @if (notifications()) {
+            <section class="notification-dropdown" aria-label="Recent notifications">
+              <header>
+                <div><strong>Notifications</strong><small>Activity in this session</small></div>
+                <button
+                  class="icon-button"
+                  aria-label="Mark all as read"
+                  (click)="activity.markRead()"
+                >
+                  <app-icon name="read" />
+                </button>
+              </header>
+              <div class="notification-list">
+                @for (item of activity.items(); track item.id) {
+                  <div class="notification-item" [class.unread]="!item.read">
+                    <span class="mini-icon"><app-icon name="activity" [size]="17" /></span>
+                    <div>
+                      <strong>{{ item.title }}</strong>
+                      <p>{{ item.detail }}</p>
+                      <small>{{ item.at | date: 'shortTime' }}</small>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="empty-notifications">
+                    <app-icon name="bell" [size]="28" />
+                    <p>You're all caught up</p>
+                    <small>Your actions will appear here.</small>
+                  </div>
+                }
+              </div>
+              <footer>No server notification feed is available yet.</footer>
+            </section>
+          }
+        </div>
+        <span class="topbar-divider"></span
+        ><a routerLink="/profile" class="topbar-profile" title="My account"
+          ><span class="avatar">{{ initials() }}</span
+          ><span
+            ><strong>{{ auth.user()?.['fullname'] || 'Administrator' }}</strong
+            ><small>Administrator</small></span
+          ></a
+        >
+        <button class="logout-button" (click)="confirmLogout.set(true)" title="Log out">
+          <app-icon name="logout" [size]="18" /><span>Log out</span>
+        </button>
+      </div>
+    </header>
+    <main id="main-content" class="page-content" tabindex="-1">
+      <router-outlet />
+    </main>
+    <footer class="workspace-footer">
+      <span>APCafeteria <span class="footer-dot">·</span> Asia Pacific University</span
+      ><span>Made for campus life.</span>
+    </footer>
+  </div>
+</div>
+@if (confirmLogout()) {
+  <app-dialog title="Ready to sign out?" [busy]="loggingOut()" (closed)="confirmLogout.set(false)"
+    ><div class="modal-body">
+      <p class="muted">
+        Your current access token will be revoked and your saved session will be removed from this
+        browser tab.
+      </p>
+    </div>
+    <footer class="modal-actions">
+      <button
+        class="btn btn-secondary"
+        [disabled]="loggingOut()"
+        (click)="confirmLogout.set(false)"
+      >
+        Stay signed in</button
+      ><button class="btn btn-primary" [disabled]="loggingOut()" (click)="logout()">
+        <app-icon name="logout" [size]="17" />{{ loggingOut() ? 'Signing out…' : 'Log out' }}
+      </button>
+    </footer></app-dialog
+  >
+}
